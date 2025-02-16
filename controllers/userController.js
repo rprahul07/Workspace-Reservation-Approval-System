@@ -82,7 +82,7 @@ const managerApproval = asyncHandler(async (req, res) => {
   const { id } = req.params;
   const { action } = req.body;
 
-  const booking = await Booking.findByPk(id);
+  const booking = await Booking.findByPk(employeeId);
   if (!booking || booking.status !== "Pending") {
     return res.status(400).json({ message: "Invalid request" });
   }
@@ -108,10 +108,14 @@ const adminApproval = asyncHandler(async (req, res) => {
 });
 
 // List all bookings
-const listBookings = asyncHandler(async (req, res) => {
-  const bookings = await Booking.findAll({ include: User });
-  res.json(bookings);
-});
+const getAllBookings = async (req, res) => {
+  try {
+    const bookings = await Booking.findAll({ include: User }); // Include User details
+    res.json(bookings);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
 
 module.exports = {
   registerUser,
@@ -120,5 +124,5 @@ module.exports = {
   createBooking,
   managerApproval,
   adminApproval,
-  listBookings,
+  getAllBookings,
 };

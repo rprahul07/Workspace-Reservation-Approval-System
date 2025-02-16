@@ -3,7 +3,7 @@ const router = express.Router();
 const { registerUser, loginUser,
     currentUser,
    
-     createBooking,managerApproval,adminApproval,listBookings 
+     createBooking,managerApproval,adminApproval,getAllBookings 
 } = require('../controllers/userController');
 const validateToken=require("../middlewares/validateTokenHandler");
 
@@ -13,6 +13,6 @@ router.get('/current', validateToken,currentUser);
 router.post('/booking',createBooking);
 router.put('/booking/:id/manager',managerApproval);
 router.put('/booking/:id/admin',adminApproval);
-router.get('/bookings',listBookings);
+router.get('/bookings',getAllBookings);
 
 module.exports = router;

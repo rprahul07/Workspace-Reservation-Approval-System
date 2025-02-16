@@ -1,37 +1,35 @@
-const express=require("express");
+const express = require("express");
 const errorhandler = require("./middlewares/errorHandler");
-// const connectDb = require("./config/dbConnection");
-const dotenv=require("dotenv").config();
-const cors = require('cors');
-const { Sequelize } = require("sequelize");
-const db = require("./models");
+const dotenv = require("dotenv").config();
+const cors = require("cors");
+const { sequelize } = require("./config/database");
 
+const app = express();
+const PORT = process.env.PORT || 5000;
 
-
-const app= express();
-
-const PORT=process.env.PORT||5000;
 app.use(cors({
-    origin: 'http://localhost:3000', 
-    methods: ['GET', 'POST'], 
-    credentials: true 
-  }));
+    origin: "http://localhost:3000",
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    credentials: true
+}));
 
 app.use(express.json());
-// app.use("/api/contacts",require("./routes/contactRoutes"))
+
+// Routes
 app.use("/api/user", require("./routes/userRoutes"));
 
+// Global error handler
 app.use(errorhandler);
 
-
-
-
-
-
-db.sequelize.sync().then((req)=>{
-  
-app.listen(PORT,()=>{
-    console.log(`Server is running on the port ${PORT}` )
-});
-
-});
+// Database sync and server start
+sequelize.sync({ force: false })  // Set force: false to avoid dropping tables
+    .then(() => {
+        console.log("Database connected successfully.");
+        app.listen(PORT, () => {
+            console.log(`Server is running on port ${PORT}`);
+        });
+    })
+    .catch((err) => {
+        console.error("Database connection failed:", err);
+    });
+    module.exports = { app }; 
