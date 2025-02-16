@@ -1,4 +1,4 @@
-const { User } = require("../models");
+const { User,Booking } = require("../models");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const asyncHandler = require("express-async-handler");
@@ -60,4 +60,65 @@ const loginUser = asyncHandler(async (req, res) => {
   }
 });
 
-module.exports = { registerUser, loginUser };
+// Get current user
+const currentUser = asyncHandler(async (req, res) => {
+  res.status(200).json({
+    id: req.user.id,
+    name: req.user.name,
+    email: req.user.email,
+    role: req.user.role,
+  });
+});
+
+// Create booking request
+const createBooking = asyncHandler(async (req, res) => {
+  const { employeeId, date } = req.body;
+  const booking = await Booking.create({ employeeId, date, status: "Pending" });
+  res.status(201).json(booking);
+});
+
+// Approve/reject booking (Team Manager)
+const managerApproval = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const { action } = req.body;
+
+  const booking = await Booking.findByPk(id);
+  if (!booking || booking.status !== "Pending") {
+    return res.status(400).json({ message: "Invalid request" });
+  }
+
+  booking.status = action === "approve" ? "Manager Approved" : "Rejected";
+  await booking.save();
+  res.json(booking);
+});
+
+// Approve/reject booking (Admin)
+const adminApproval = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const { action } = req.body;
+
+  const booking = await Booking.findByPk(id);
+  if (!booking || booking.status !== "Manager Approved") {
+    return res.status(400).json({ message: "Invalid request" });
+  }
+
+  booking.status = action === "approve" ? "Admin Approved" : "Rejected";
+  await booking.save();
+  res.json(booking);
+});
+
+// List all bookings
+const listBookings = asyncHandler(async (req, res) => {
+  const bookings = await Booking.findAll({ include: User });
+  res.json(bookings);
+});
+
+module.exports = {
+  registerUser,
+  loginUser,
+  currentUser,
+  createBooking,
+  managerApproval,
+  adminApproval,
+  listBookings,
+};
